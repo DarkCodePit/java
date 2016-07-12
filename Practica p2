@@ -1,0 +1,93 @@
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author PiT
+ */
+public class Practica {
+
+	public static Integer memTotal = 0;
+	static Long ss;
+
+	public static void main(String[] args) throws IOException {
+		List<String> linii = new ArrayList<>();
+		readFile(linii, "src/file.txt");
+		String cc = null;
+		for (int i = 0; i < linii.size(); ++i){
+			String s = linii.get(i);
+			
+			ss = 0L;
+			cc = s.substring(1, 3);
+			
+			//conversie hex to dec
+			memTotal += Integer.parseInt(cc, 16);
+
+			if (!(":".equals(s.substring(0, 1)))){
+				System.out.println("Eroare: Linia " + (i + 1) + " nu incepe cu \":\"");
+				return;
+			}
+			else if (!checkSum(s)){
+				System.out.println("Eroare la linia: " + (i + 1) + "\n" + s);
+				return;
+			}
+			System.out.println(s.substring(3, 7));
+		}
+		
+		System.out.println("Memoria totala ocupata: " + memTotal);
+		
+	}
+
+	//citire din fisier si adaugare fiecare linie in lista liniiFisier
+	public static void readFile(List<String> liniiFisier, String filePath) throws IOException {
+		FileReader fr = null;
+		BufferedReader br = null;
+		String s;
+		try {
+			fr = new FileReader(filePath);
+			br = new BufferedReader(fr);
+			while ((s = br.readLine()) != null) {
+				liniiFisier.add(s);
+			}
+		} finally {
+			if (fr != null) {
+				fr.close();
+			}
+		}
+
+	}
+	
+	//verificare suma de control
+	public static boolean checkSum (String  s){
+		
+		//suma Bytes-ilor de pe o linie
+		for (int i = 3; i < s.length(); i += 2)
+			//conversie din hex in dec
+			ss += Long.parseLong(s.substring(i-2, i), 16);
+		
+		//modulo 256
+		ss %= 256;
+		
+		//C2(ss)
+		ss = 256 - ss;
+		
+		//conversie ss din dec in hex
+		String cSum = Integer.toHexString(ss.intValue());
+		
+		/*daca suma de control era de forma 0X
+		 * unde X = cifra Hexa
+		 * adaugam un 0 in fata string-ului cSum pentru ca e format doar din un caracter
+		 * */
+		if (cSum.length() == 1){
+			cSum = "0" + cSum;
+		}
+		
+		//returnam rezultatul comparatiei dintre suma obtinuta si ultimele doua caractere de pe linie
+		return cSum.equals((s.substring(s.length() - 2, s.length()).toLowerCase()));
+	}
+
+}
